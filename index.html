@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLFFY | Tears in Heaven - Eric Clapton (A1)</title>
+    <!-- Tailwind CSS com Paleta "Celestial Sky" Configurada -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'spotify-green': '#1DB954',
+                        'spotify-black': '#121212',
+                        'spotify-base': '#000000',
+                        'spotify-surface': '#181818',
+                        'spotify-surface-hover': '#282828',
+                        'spotify-text-base': '#a7a7a7',
+                        'spotify-text-highlight': '#ffffff',
+                        'lyric-bg': '#0f172a', /* Deep slate blue for emotional depth */
+                        'clapton-blue': '#7dd3fc', /* Soft celestial sky blue */
+                        'clapton-blue-hover': '#38bdf8',
+                        'clapton-cloud': '#f1f5f9' /* Soft white/cloud */
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --spotify-base: #000000;
+            --spotify-surface: #181818;
+            --spotify-surface-hover: #282828;
+            --spotify-text-base: #a7a7a7;
+            --spotify-text-highlight: #ffffff;
+            --lyric-bg: #0f172a; 
+            --clapton-blue: #7dd3fc;
+            --clapton-cloud: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--spotify-base);
+            color: var(--spotify-text-base);
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estrutura Principal */
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 90px);
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--spotify-base);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 12px;
+            flex-shrink: 0;
+        }
+
+        .main-view {
+            flex: 1;
+            /* Gradiente inspirado num céu suave e emocional */
+            background: linear-gradient(180deg, #1e293b 0%, #000000 100%);
+            border-radius: 12px;
+            margin: 8px 8px 0 0;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .player-bar {
+            height: 90px;
+            background-color: var(--spotify-surface);
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 50;
+        }
+        
+        /* Navegação */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            color: var(--spotify-text-base);
+            font-weight: 700;
+            font-size: 14px;
+            transition: color 0.2s;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .nav-item:hover { color: var(--spotify-text-highlight); }
+        .nav-item.active { color: var(--spotify-text-highlight); background-color: var(--spotify-surface-hover); border-left: 3px solid var(--clapton-blue); }
+
+        /* Botões */
+        .play-btn-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--clapton-blue);
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(125, 211, 252, 0.3);
+        }
+        .play-btn-large:hover { background-color: #e0f2fe; transform: scale(1.08); box-shadow: 0 12px 20px rgba(125, 211, 252, 0.5); }
+
+        /* Botão Brilhante (Azul Celestial) */
+        .btn-confirm-glow {
+            background-color: var(--clapton-blue);
+            color: black;
+            font-weight: 900;
+            padding: 16px 40px;
+            border-radius: 500px;
+            text-transform: uppercase;
+            font-size: 16px;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 20px rgba(125, 211, 252, 0.4);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-confirm-glow:hover {
+            background-color: #38bdf8;
+            color: black;
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(125, 211, 252, 0.6);
+        }
+        .btn-confirm-glow:disabled {
+            background-color: #333;
+            color: #666;
+            box-shadow: none;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        @keyframes pulse-sky-glow {
+            0% { box-shadow: 0 0 10px rgba(125, 211, 252, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(125, 211, 252, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(125, 211, 252, 0.4); }
+        }
+        .animate-pulse-sky-glow { animation: pulse-sky-glow 2s infinite ease-in-out; }
+
+        /* Classe de Sucesso Absoluto */
+        .bg-success-glow {
+            background-color: #10b981 !important; /* Verde esmeralda */
+            color: black !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.8) !important;
+            transition: all 0.3s ease !important;
+        }
+        .bg-success-glow p, .bg-success-glow span, .bg-success-glow div, .bg-success-glow i, .bg-success-glow h3 { 
+            color: black !important; 
+            text-shadow: none !important;
+        }
+
+        /* Classe de Erro */
+        .bg-error-glow {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.8) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        /* Elementos Visuais das Letras */
+        .lyric-line {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        @media (max-width: 768px) { .lyric-line { font-size: 1.8rem; } }
+        
+        .lyric-inactive { color: rgba(255, 255, 255, 0.3); }
+        .lyric-active { color: var(--spotify-text-highlight); text-shadow: 0 4px 20px rgba(125, 211, 252, 0.3); }
+        
+        .lyric-blank {
+            display: inline-block;
+            min-width: 140px;
+            border-bottom: 4px solid var(--clapton-blue);
+            color: var(--clapton-blue);
+            text-align: center;
+            padding: 0 10px;
+            margin: 0 5px;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .lyric-blank.filled {
+            border-bottom-color: var(--clapton-blue);
+            text-shadow: 0 0 20px rgba(125, 211, 252, 0.6);
+            color: white;
+        }
+
+        /* Estilo das Opções */
+        .option-pill {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        .option-pill:hover {
+            background: rgba(125, 211, 252, 0.15);
+            border-color: var(--clapton-blue);
+            transform: translateY(-2px);
+        }
+        .option-pill.selected {
+            background: var(--clapton-blue);
+            color: black;
+            border-color: var(--clapton-blue);
+            box-shadow: 0 0 15px rgba(125, 211, 252, 0.5);
+        }
+
+        /* Ocultar barra de rolagem nas abas */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Vista Imersiva das Cápsulas */
+        .immersive-view {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 90px;
+            background: linear-gradient(180deg, var(--lyric-bg) 0%, #000000 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.3, 0, 0, 1);
+        }
+        .immersive-view.active { transform: translateY(0); }
+
+        /* Barra de rolagem customizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(125, 211, 252, 0.5); }
+
+        /* Barra de Progresso do Leitor */
+        .progress-bar { width: 100%; height: 4px; background: #333; border-radius: 2px; cursor: pointer; position: relative; }
+        .progress-fill { height: 100%; background: var(--spotify-text-highlight); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+        .progress-bar:hover .progress-fill { background: var(--clapton-blue); }
+        .progress-bar:hover .progress-fill::after {
+            content: ''; position: absolute; right: -5px; top: -4px; width: 12px; height: 12px;
+            background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- RECIPIENTE PRINCIPAL -->
+    <div class="app-container">
+        <!-- BARRA LATERAL -->
+        <nav class="sidebar">
+            <div class="mb-8 px-3 text-white flex items-center gap-2">
+                <div class="w-8 h-8 bg-clapton-blue rounded-full flex items-center justify-center text-black font-black italic text-lg shadow-[0_0_15px_rgba(125,211,252,0.5)]">W</div>
+                <span class="text-2xl font-black tracking-tighter">WOLFFY</span>
+            </div>
+            <ul class="space-y-2">
+                <li class="nav-item active"><i class="fa-solid fa-house text-xl w-6"></i> Home</li>
+                <li class="nav-item"><i class="fa-solid fa-magnifying-glass text-xl w-6"></i> Search</li>
+                <li class="nav-item"><i class="fa-solid fa-book-open text-xl w-6"></i> Your Library</li>
+            </ul>
+            <div class="mt-8 pt-6 border-t border-slate-800">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 px-3">Study Playlists</p>
+                <ul class="space-y-3 px-3 text-sm font-semibold">
+                    <li class="text-white cursor-pointer transition">A1 - Eric Clapton (Heaven)</li>
+                    <li class="hover:text-white cursor-pointer transition text-slate-500">A2 - Creed (Higher)</li>
+                    <li class="hover:text-white cursor-pointer transition text-slate-500">A2 - Creedence Clearwater</li>
+                    <li class="hover:text-white cursor-pointer transition text-slate-500">B1 - My Chemical Romance</li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- ÁREA PRINCIPAL -->
+        <main class="main-view shadow-2xl" id="main-dashboard">
+            <!-- Cabeçalho Estilo Capa de Álbum -->
+            <div class="p-8 pt-16 flex flex-col md:flex-row items-end gap-6 bg-gradient-to-t from-black/90 to-transparent">
+                <div class="w-48 h-48 md:w-60 md:h-60 shadow-[0_15px_40px_rgba(125,211,252,0.2)] flex-shrink-0 group relative overflow-hidden bg-slate-900 rounded-xl border border-sky-900/50">
+                    <!-- Imagem Celestial -->
+                    <div class="w-full h-full flex flex-col items-center justify-center text-center p-4 bg-cover bg-blend-overlay bg-slate-900/50 group-hover:bg-slate-900/30 transition-all duration-700" style="background-image: url('');">
+                        <span class="text-[10px] font-bold text-clapton-blue tracking-[0.3em] mb-2 uppercase drop-shadow-md">WOLFFY A1</span>
+                        <h2 class="text-3xl font-black text-white italic tracking-tighter shadow-black drop-shadow-lg leading-tight">TEARS IN<br><span class="text-clapton-cloud">HEAVEN</span></h2>
+                    </div>
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-play text-5xl text-clapton-cloud"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 pb-2">
+                    <span class="text-sm font-bold tracking-widest uppercase text-white"><i class="fa-solid fa-cloud text-clapton-blue mr-1"></i> Interactive Masterclass • A1</span>
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white mb-2 leading-none drop-shadow-lg">Tears in Heaven</h1>
+                    <div class="flex items-center gap-3 text-sm font-bold flex-wrap">
+                        <div class="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center border border-slate-600"><i class="fa-solid fa-guitar text-[10px] text-gray-300"></i></div>
+                        <span class="text-white hover:underline cursor-pointer">Eric Clapton</span>
+                        <span class="text-gray-400">• Theme: Love & Imagination</span>
+                        <span class="text-clapton-blue font-bold">• Focus: Hypothetical "Would"</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-8 mt-6">
+                <p class="text-lg md:text-xl text-gray-300 leading-relaxed font-medium max-w-4xl shadow-black drop-shadow-lg border-l-4 border-clapton-blue pl-4">
+                    Explore emotions, memory, and the power of imagination. 
+                    In this 25-capsule Masterclass, you will learn how to use <span class="text-white font-bold italic">"Would"</span> to ask hypothetical questions and describe imaginary situations.
+                </p>
+            </div>
+
+            <!-- Barra de Ações -->
+            <div class="px-8 py-6 flex items-center gap-6 mt-2">
+                <div class="play-btn-large" onclick="startMasterclass()">
+                    <i class="fa-solid fa-play ml-1"></i>
+                </div>
+                <i class="fa-regular fa-heart text-3xl text-slate-400 cursor-pointer transition hover:text-white hover:scale-110"></i>
+                <i class="fa-solid fa-ellipsis text-2xl text-slate-500 hover:text-white cursor-pointer transition"></i>
+            </div>
+
+            <!-- ABAS DE CATEGORIA -->
+            <div class="px-8 mt-2">
+                <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide" id="tabs-container">
+                    <!-- Abas Injetadas via JS -->
+                </div>
+            </div>
+
+            <!-- GRADE DE CÁPSULAS -->
+            <div class="px-8 pb-20 pt-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="capsules-container">
+                    <!-- Cartões Injetados via JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- VISTA IMERSIVA DA CÁPSULA -->
+        <div class="immersive-view" id="exercise-view">
+            <header class="p-6 flex justify-between items-center bg-transparent z-10 border-b border-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-black/60 rounded-xl flex items-center justify-center shadow-lg border border-sky-900/50 backdrop-blur-sm" id="ex-icon-container">
+                        <i class="fa-solid fa-music text-clapton-blue text-xl" id="ex-header-icon"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-widest text-clapton-blue mb-0.5" id="ex-subtitle">MODULE TYPE</p>
+                        <h2 class="text-xl font-bold text-white tracking-tight" id="ex-title">Capsule Title</h2>
+                    </div>
+                </div>
+                <button onclick="closeExercise()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white transition backdrop-blur-md">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </header>
+
+            <!-- pb-32 garante que o conteúdo termine em segurança acima da barra flutuante -->
+            <div class="flex-grow flex flex-col p-8 pb-32 overflow-y-auto relative" id="exercise-content">
+                <!-- Conteúdo Injetado via JS -->
+            </div>
+
+            <!-- Barra de Feedback Flutuante -->
+            <div id="feedback-bar" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-[90%] max-w-3xl py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex items-center justify-between px-6 transition-all duration-400 ease-out border-2 opacity-0 translate-y-12 pointer-events-none backdrop-blur-xl">
+                <!-- Feedback Injetado -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LEITOR INFERIOR -->
+    <div class="player-bar">
+        <div class="flex items-center gap-4 w-1/3">
+            <div class="w-14 h-14 bg-slate-900 rounded shadow flex items-center justify-center text-slate-500 overflow-hidden border border-slate-700">
+                <div class="w-full h-full bg-cover bg-center opacity-80" style="background-image: url('');"></div>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-white hover:underline cursor-pointer">Tears in Heaven (A1)</span>
+                <span class="text-xs text-slate-400 hover:underline cursor-pointer">Eric Clapton</span>
+            </div>
+            <i class="fa-solid fa-heart text-spotify-green cursor-pointer ml-4"></i>
+        </div>
+
+        <div class="flex flex-col items-center justify-center w-1/3 gap-2">
+            <div class="flex items-center gap-6 text-slate-400">
+                <i class="fa-solid fa-shuffle hover:text-white cursor-pointer transition"></i>
+                <i class="fa-solid fa-backward-step hover:text-white cursor-pointer transition text-xl"></i>
+                <div class="w-8 h-8 rounded-full bg-clapton-cloud text-black flex items-center justify-center cursor-pointer hover:scale-105 transition shadow-[0_0_10px_rgba(241,245,249,0.3)]" onclick="toggleGlobalPlay()">
+                    <i class="fa-solid fa-play ml-0.5" id="global-play-icon"></i>
+                </div>
+                <i class="fa-solid fa-forward-step hover:text-white cursor-pointer transition text-xl"></i>
+                <i class="fa-solid fa-repeat text-clapton-blue cursor-pointer transition"></i>
+            </div>
+            <div class="flex items-center gap-2 w-full max-w-md text-xs text-slate-400 font-mono">
+                <span id="player-time-current">0:00</span>
+                <div class="progress-bar group">
+                    <div class="progress-fill group-hover:bg-clapton-cloud" id="player-progress"></div>
+                </div>
+                <span>4:32</span>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 w-1/3 text-slate-400">
+            <i class="fa-solid fa-microphone text-clapton-blue cursor-pointer transition" title="Capsule Mode Active"></i>
+            <i class="fa-solid fa-list-ul hover:text-white cursor-pointer transition"></i>
+            <i class="fa-solid fa-volume-high hover:text-white cursor-pointer transition"></i>
+            <div class="w-24 h-1 bg-slate-700 rounded-full cursor-pointer"><div class="w-1/2 h-full bg-clapton-cloud rounded-full hover:bg-white"></div></div>
+        </div>
+    </div>
+
+    <!-- MÓDULOS A1 (ERIC CLAPTON) COM 25 EXERCÍCIOS CATEGORIZADOS E AVANÇO MANUAL -->
+    <script>
+        // Definir os 5 Atos (Categorias)
+        const categories = [
+            { id: 1, name: 'Act I: The Question', icon: 'fa-circle-question' },
+            { id: 2, name: 'Act II: Imagination', icon: 'fa-cloud' },
+            { id: 3, name: 'Act III: Grammar', icon: 'fa-check' },
+            { id: 4, name: 'Act IV: Scenarios', icon: 'fa-map' },
+            { id: 5, name: 'Act V: Big Questions', icon: 'fa-star' }
+        ];
+
+        let currentCategory = 1;
+
+        // Array com os 25 Exercícios Nível A1 (Eric Clapton - Hypothetical Would)
+        const modules = [
+            // ACT 1: The Question
+            { act: 1, id: 'cap-1', title: 'The Big Question', desc: 'Listen to the opening lyrics and complete the verse.', tag: 'Spotify Lyrics', icon: 'fa-headphones', type: 'lyrics', lines: [ { text: "____ you know my name", active: true, target: "Would" }, { text: "If I saw you in heaven?", active: false } ], options: ["Would", "Do", "Are", "Will"] },
+            { act: 1, id: 'cap-2', title: 'Vocab: Heaven', desc: 'Understand a key word from the song.', tag: 'Meaning Lab', icon: 'fa-cloud', type: 'vocab', question: "What does 'heaven' mean in this song?", options: [ { text: "A peaceful, beautiful place after life.", correct: true }, { text: "A fast car.", correct: false }, { text: "A very loud party.", correct: false } ] },
+            { act: 1, id: 'cap-3', title: 'Grammar Context', desc: 'Identify the word used for imagination.', tag: 'A1 Grammar', icon: 'fa-magnifying-glass', type: 'grammar', question: "Which word do we use to imagine a situation that is not real right now?", options: [ { text: "Would", correct: true }, { text: "Was", correct: false }, { text: "Am", correct: false } ] },
+            { act: 1, id: 'cap-4', title: 'Imagining Meetings', desc: 'Talk about a hypothetical situation.', tag: 'Speaking Arena', icon: 'fa-people-arrows', type: 'arena', prompt: "If you met a famous person from the past, what WOULD you say to them?", director: "Use your imagination to answer the question.", starters: [ "If I met them, I would say...", "I would ask them about...", "I would be very happy and..." ] },
+            { act: 1, id: 'cap-5', title: 'Would it be?', desc: 'Complete another famous question from the song.', tag: 'Spotify Lyrics', icon: 'fa-music', type: 'lyrics', lines: [ {text: "Would it be the ____", active: true, target: "same"}, {text: "If I saw you in heaven?", active: false} ], options: ["same", "good", "bad", "now"] },
+
+            // ACT 2: Imagination
+            { act: 2, id: 'cap-6', title: 'Using Would', desc: 'Learn how to construct a simple sentence.', tag: 'A1 Grammar', icon: 'fa-pencil', type: 'grammar', question: "How do we form a sentence with 'would'?", options: [ {text: "Subject + would + base verb (I would cry)", correct: true}, {text: "Subject + would + past verb (I would cried)", correct: false}, {text: "Subject + would + to verb (I would to cry)", correct: false} ] },
+            { act: 2, id: 'cap-7', title: 'Vocab: Tears', desc: 'Understand the title of the song.', tag: 'Meaning Lab', icon: 'fa-droplet', type: 'vocab', question: "What are 'tears'?", options: [ {text: "Drops of water from your eyes when you cry.", correct: true}, {text: "A type of bird.", correct: false}, {text: "A happy song.", correct: false} ] },
+            { act: 2, id: 'cap-8', title: 'Being Strong', desc: 'Complete the lyrics about feelings.', tag: 'Spotify Lyrics', icon: 'fa-headphones', type: 'lyrics', lines: [ {text: "I must be ____ and carry on", active: true, target: "strong"}, {text: "'Cause I know I don't belong", active: false} ], options: ["strong", "sad", "fast", "tall"] },
+            { act: 2, id: 'cap-9', title: 'Happy Tears', desc: 'Talk about emotions.', tag: 'Speaking Arena', icon: 'fa-face-smile', type: 'arena', prompt: "What WOULD make you cry happy tears?", director: "Imagine a beautiful and happy moment.", starters: [ "I would cry happy tears if...", "Seeing my family would make me...", "A beautiful surprise would..." ] },
+            { act: 2, id: 'cap-10', title: 'Negative Form', desc: 'Learn to say "no" with would.', tag: 'A1 Grammar', icon: 'fa-minus', type: 'grammar', question: "What is the negative form of 'would'?", options: [ {text: "wouldn't (would not)", correct: true}, {text: "don't would", correct: false}, {text: "not would", correct: false} ] },
+
+            // ACT 3: Grammar
+            { act: 3, id: 'cap-11', title: 'Question Order', desc: 'Learn to ask a question.', tag: 'A1 Grammar', icon: 'fa-question', type: 'grammar', question: "What is the correct order for a question?", options: [ {text: "Would you help me?", correct: true}, {text: "You would help me?", correct: false}, {text: "Help would you me?", correct: false} ] },
+            { act: 3, id: 'cap-12', title: 'Fill the Blank', desc: 'Practice using would.', tag: 'A1 Grammar', icon: 'fa-check-double', type: 'grammar', question: "Complete: 'She ____ like to go to heaven.'", options: [ {text: "would", correct: true}, {text: "will", correct: false}, {text: "do", correct: false} ] },
+            { act: 3, id: 'cap-13', title: 'Short Answers', desc: 'How to reply quickly.', tag: 'A1 Grammar', icon: 'fa-reply', type: 'grammar', question: "Would you go to the concert? Yes, I ____.", options: [ {text: "would", correct: true}, {text: "do", correct: false}, {text: "am", correct: false} ] },
+            { act: 3, id: 'cap-14', title: 'If you could fly...', desc: 'Use your imagination!', tag: 'Speaking Arena', icon: 'fa-plane', type: 'arena', prompt: "If you could fly like a bird, where WOULD you go?", director: "Use 'I would go to...' to answer.", starters: [ "If I could fly, I would go to...", "I would visit...", "I would love to see..." ] },
+            { act: 3, id: 'cap-15', title: 'I don\'t belong', desc: 'Complete the chorus lyrics.', tag: 'Spotify Lyrics', icon: 'fa-music', type: 'lyrics', lines: [ {text: "'Cause I know I don't ____", active: true, target: "belong"}, {text: "Here in heaven", active: false} ], options: ["belong", "stay", "look", "live"] },
+
+            // ACT 4: Scenarios
+            { act: 4, id: 'cap-16', title: 'If I were...', desc: 'A common imaginary structure.', tag: 'A1 Grammar', icon: 'fa-star-half-stroke', type: 'grammar', question: "Complete: 'If I were a bird, I ____ fly.'", options: [ {text: "would", correct: true}, {text: "will", correct: false}, {text: "did", correct: false} ] },
+            { act: 4, id: 'cap-17', title: 'Vocab: Belong', desc: 'Understand a feeling.', tag: 'Meaning Lab', icon: 'fa-house', type: 'vocab', question: "What does it mean to 'belong' somewhere?", options: [ {text: "To feel happy and comfortable, like it is your home.", correct: true}, {text: "To buy something.", correct: false}, {text: "To walk very fast.", correct: false} ] },
+            { act: 4, id: 'cap-18', title: 'Finding something', desc: 'A hypothetical situation.', tag: 'A1 Grammar', icon: 'fa-wallet', type: 'grammar', question: "____ you give it back?", options: [ {text: "Would", correct: true}, {text: "Do", correct: false}, {text: "Are", correct: false} ] },
+            { act: 4, id: 'cap-19', title: 'The Wallet Scenario', desc: 'What would you do?', tag: 'Speaking Arena', icon: 'fa-money-bill', type: 'arena', prompt: "If you found a wallet on the street, what WOULD you do?", director: "Explain your hypothetical action.", starters: [ "I would look for the owner.", "I would give it to the police.", "I wouldn't keep the money." ] },
+            { act: 4, id: 'cap-20', title: 'Beyond the Door', desc: 'Complete the lyrics.', tag: 'Spotify Lyrics', icon: 'fa-door-open', type: 'lyrics', lines: [ {text: "Beyond the door, there's peace I'm ____", active: true, target: "sure"}, {text: "And I know there'll be no more tears in heaven", active: false} ], options: ["sure", "sad", "good", "bad"] },
+
+            // ACT 5: Big Questions
+            { act: 5, id: 'cap-21', title: 'Vocab: Beyond', desc: 'Learn a spatial word.', tag: 'Meaning Lab', icon: 'fa-arrow-right', type: 'vocab', question: "What does 'beyond' mean?", options: [ {text: "On the other side of something.", correct: true}, {text: "Inside the house.", correct: false}, {text: "Under the table.", correct: false} ] },
+            { act: 5, id: 'cap-22', title: 'My Heaven', desc: 'Practice describing a place.', tag: 'A1 Grammar', icon: 'fa-music', type: 'grammar', question: "Complete: 'My heaven ____ have a lot of music.'", options: [ {text: "would", correct: true}, {text: "is", correct: false}, {text: "do", correct: false} ] },
+            { act: 5, id: 'cap-23', title: 'Negative Emotion', desc: 'How to express absence of a feeling.', tag: 'A1 Grammar', icon: 'fa-face-frown', type: 'grammar', question: "Complete: 'I wouldn't ____ angry.'", options: [ {text: "be", correct: true}, {text: "am", correct: false}, {text: "was", correct: false} ] },
+            { act: 5, id: 'cap-24', title: 'A Wise Question', desc: 'Use your imagination for a big question.', tag: 'Speaking Arena', icon: 'fa-brain', type: 'arena', prompt: "If you could ask a wise person one question, what WOULD it be?", director: "Imagine asking the most important question.", starters: [ "I would ask about...", "My question would be...", "I would like to know if..." ] },
+            { act: 5, id: 'cap-25', title: 'Your Heaven', desc: 'Final reflection.', tag: 'Speaking Arena', icon: 'fa-cloud', type: 'arena', prompt: "What WOULD your heaven look like? Describe it.", director: "Use 'would' to describe your perfect, peaceful place.", starters: [ "My heaven would have...", "It would be a place with...", "I would see my..." ] }
+        ];
+
+        let currentModuleIndex = 0;
+        let isPlaying = false;
+        let progressInterval;
+        let selectedLyricWord = null;
+        let currentLyricLineIndex = 0;
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabs-container');
+            tabsContainer.innerHTML = categories.map(cat => `
+                <button onclick="selectCategory(${cat.id})" class="flex-shrink-0 px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 border ${currentCategory === cat.id ? 'bg-clapton-blue text-black border-clapton-blue shadow-[0_0_15px_rgba(125,211,252,0.5)]' : 'bg-black/40 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-white'}">
+                    <i class="fa-solid ${cat.icon} mr-2"></i> ${cat.name}
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(id) {
+            currentCategory = id;
+            renderTabs();
+            renderCapsules();
+        }
+
+        function renderCapsules() {
+            const container = document.getElementById('capsules-container');
+            
+            // Filtrar módulos pela categoria atualmente selecionada (Act)
+            const filteredHtml = modules.map((mod, index) => {
+                if (mod.act !== currentCategory) return '';
+
+                const isCompleted = mod.completed;
+                const borderClass = isCompleted ? 'border-emerald-500/70' : 'border-sky-900 hover:border-clapton-blue/50';
+                const iconBgClass = isCompleted ? 'bg-emerald-500 text-black' : 'bg-black/40 text-clapton-blue group-hover:bg-clapton-blue group-hover:text-black';
+                const checkMark = isCompleted ? '<div class="absolute top-4 right-4 text-emerald-500 animate-fade-in"><i class="fa-solid fa-circle-check text-xl"></i></div>' : '';
+                
+                return `
+                <div class="bg-slate-900/80 backdrop-blur-md hover:bg-slate-800 border ${borderClass} rounded-2xl p-6 cursor-pointer transition-all duration-300 group flex flex-col h-full shadow-lg hover:shadow-[0_0_20px_rgba(125,211,252,0.15)] relative overflow-hidden animate-fade-in" onclick="startModule(${index})">
+                    
+                    ${checkMark}
+                    <!-- Brilho decorativo de fundo -->
+                    <div class="absolute -right-6 -top-6 w-32 h-32 bg-sky-500/5 rounded-full blur-3xl group-hover:bg-sky-500/15 transition-colors"></div>
+
+                    <div class="w-12 h-12 rounded-xl ${iconBgClass} flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-all shadow-md border border-sky-800">
+                        <i class="fa-solid ${mod.icon}"></i>
+                    </div>
+                    
+                    <h3 class="text-white font-black text-xl mb-2 tracking-tight">${mod.title}</h3>
+                    <p class="text-slate-400 text-sm mb-8 flex-grow leading-relaxed">${mod.desc}</p>
+                    
+                    <div class="flex justify-between items-center mt-auto pt-4 border-t border-slate-800">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-black/60 px-3 py-1.5 rounded border border-slate-800">${mod.tag}</span>
+                        <div class="w-8 h-8 rounded-full ${isCompleted ? 'bg-emerald-500 text-black' : 'bg-clapton-blue text-black'} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 shadow-lg">
+                            <i class="fa-solid ${isCompleted ? 'fa-check' : 'fa-play ml-0.5'} text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            container.innerHTML = filteredHtml;
+        }
+
+        function toggleGlobalPlay() {
+            const icon = document.getElementById('global-play-icon');
+            const progress = document.getElementById('player-progress');
+            const timeDisplay = document.getElementById('player-time-current');
+            
+            isPlaying = !isPlaying;
+            
+            if (isPlaying) {
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+                
+                let width = parseFloat(progress.style.width) || 0;
+                let seconds = 0;
+                
+                progressInterval = setInterval(() => {
+                    width += 0.05;
+                    seconds += 0.15; 
+                    if (width > 100) width = 0;
+                    progress.style.width = width + '%';
+                    
+                    const m = Math.floor(seconds / 60);
+                    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+                    timeDisplay.innerText = `${m}:${s}`;
+                }, 100);
+            } else {
+                icon.classList.remove('fa-pause');
+                icon.classList.add('fa-play');
+                clearInterval(progressInterval);
+            }
+        }
+
+        function startMasterclass() {
+            // Garantir que salta para a Categoria 1, Módulo 0
+            selectCategory(1);
+            startModule(0);
+            if(!isPlaying) toggleGlobalPlay();
+        }
+
+        function startModule(index) {
+            currentModuleIndex = index;
+            const module = modules[index];
+            
+            document.getElementById('ex-subtitle').innerText = module.tag;
+            document.getElementById('ex-title').innerText = module.title;
+            document.getElementById('ex-header-icon').className = `fa-solid ${module.icon} text-clapton-blue text-xl`;
+            
+            document.getElementById('exercise-view').classList.add('active');
+            
+            renderQuestion();
+        }
+
+        function closeExercise() {
+            document.getElementById('exercise-view').classList.remove('active');
+            hideFeedback();
+        }
+
+        function nextModule() {
+            if(currentModuleIndex + 1 < modules.length) {
+                const nextIndex = currentModuleIndex + 1;
+                const nextAct = modules[nextIndex].act;
+                
+                // Se o próximo módulo estiver numa nova categoria, atualizar a aba na UI automaticamente
+                if (currentCategory !== nextAct) {
+                    selectCategory(nextAct);
+                }
+                
+                startModule(nextIndex);
+            } else {
+                closeExercise();
+            }
+        }
+
+        function renderQuestion() {
+            const module = modules[currentModuleIndex];
+            const content = document.getElementById('exercise-content');
+            content.innerHTML = '';
+            hideFeedback();
+
+            if (module.type === 'lyrics') renderSpotifyLyrics(module);
+            if (module.type === 'vocab' || module.type === 'grammar') renderQuiz(module);
+            if (module.type === 'arena') renderArena(module);
+        }
+
+        // --- TIPO DE CÁPSULA: LETRAS ---
+        function renderSpotifyLyrics(module) {
+            selectedLyricWord = null;
+            
+            currentLyricLineIndex = module.lines.findIndex(l => l.active && !l.solved);
+            
+            if (currentLyricLineIndex === -1) {
+                finishModule();
+                return;
+            }
+
+            const activeLine = module.lines[currentLyricLineIndex];
+            const content = document.getElementById('exercise-content');
+            
+            let lyricsHtml = module.lines.map((line, idx) => {
+                if (line.active) {
+                    const parts = line.text.split('____');
+                    if (line.solved) {
+                        return `<div class="lyric-line lyric-inactive my-4">${parts[0]} <span class="text-clapton-blue drop-shadow-md">${line.target}</span> ${parts[1] || ''}</div>`;
+                    } else if (idx === currentLyricLineIndex) {
+                        return `
+                            <div class="lyric-line lyric-active my-4 scale-105 origin-left">
+                                ${parts[0]} <span id="lyric-blank" class="lyric-blank bg-slate-900/50">...</span> ${parts[1] || ''}
+                            </div>
+                        `;
+                    } else {
+                        return `<div class="lyric-line lyric-inactive my-4 opacity-40">${parts[0]} ____ ${parts[1] || ''}</div>`;
+                    }
+                } else {
+                    return `<div class="lyric-line lyric-inactive my-4 opacity-40">${line.text}</div>`;
+                }
+            }).join('');
+
+            let optionsHtml = module.options.map(opt => `
+                <button onclick="selectLyricOption('${opt}')" class="option-pill" id="opt-${opt}">
+                    ${opt}
+                </button>
+            `).join('');
+
+            content.innerHTML = `
+                <div class="w-full max-w-4xl mx-auto flex flex-col h-full animate-fade-in pt-6">
+                    <p class="text-clapton-blue text-sm font-bold uppercase tracking-widest mb-8"><i class="fa-solid fa-volume-high mr-2 text-clapton-blue"></i> Listen and complete</p>
+                    <div class="flex-grow flex flex-col justify-center">
+                        ${lyricsHtml}
+                    </div>
+                    
+                    <div class="mt-auto pt-10 pb-4 flex flex-col items-center gap-8 bg-gradient-to-t from-[var(--lyric-bg)] to-transparent">
+                        <div class="flex flex-wrap justify-center gap-4">
+                            ${optionsHtml}
+                        </div>
+                        <button id="btn-confirm-lyrics" onclick="confirmLyrics()" disabled class="btn-confirm-glow animate-pulse-sky-glow">
+                            <i class="fa-solid fa-check-double"></i> Confirm Word
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectLyricOption(word) {
+            selectedLyricWord = word;
+            const blank = document.getElementById('lyric-blank');
+            blank.innerText = word;
+            blank.classList.add('filled', 'bg-transparent');
+            blank.classList.remove('bg-slate-900/50');
+            
+            const module = modules[currentModuleIndex];
+            module.options.forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                if(el) el.classList.remove('selected');
+            });
+            document.getElementById(`opt-${word}`).classList.add('selected');
+            
+            document.getElementById('btn-confirm-lyrics').disabled = false;
+        }
+
+        function confirmLyrics() {
+            const module = modules[currentModuleIndex];
+            const activeLine = module.lines[currentLyricLineIndex];
+            
+            if (selectedLyricWord === activeLine.target) {
+                document.getElementById('lyric-blank').classList.add('bg-success-glow');
+                document.getElementById(`opt-${selectedLyricWord}`).classList.add('bg-success-glow');
+                
+                showFeedback("success", "Correct! You completed the verse.", "advanceLyrics()");
+            } else {
+                showFeedback("error", "Not quite right. Try again.");
+                setTimeout(hideFeedback, 3000); 
+            }
+        }
+
+        function advanceLyrics() {
+            hideFeedback();
+            const module = modules[currentModuleIndex];
+            const activeLine = module.lines[currentLyricLineIndex];
+            activeLine.solved = true;
+            renderSpotifyLyrics(module); 
+        }
+
+        // --- TIPO DE CÁPSULA: QUIZ MINIMALISTA (Gramática/Vocabulário) ---
+        function renderQuiz(module) {
+            let optionsHtml = module.options.map((opt, i) => `
+                <div onclick="selectQuizOption(${i})" class="bg-slate-900/60 backdrop-blur-sm hover:bg-slate-800 border border-slate-700 hover:border-clapton-blue rounded-xl p-6 cursor-pointer transition-all duration-300 group flex items-center justify-between shadow-lg" id="quiz-opt-${i}">
+                    <p class="text-white text-xl font-bold group-hover:text-clapton-blue transition-colors">${opt.text}</p>
+                    <div class="w-6 h-6 rounded-full border-2 border-slate-500 group-hover:border-clapton-blue flex items-center justify-center">
+                        <div class="w-3 h-3 rounded-full bg-clapton-blue opacity-0 transition-opacity" id="quiz-dot-${i}"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('exercise-content').innerHTML = `
+                <div class="w-full max-w-3xl mx-auto mt-16 animate-fade-in flex flex-col h-full">
+                    <div class="text-center mb-16">
+                        <div class="w-20 h-20 bg-black/60 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg border border-sky-500/30">
+                            <i class="fa-solid ${module.icon} text-4xl text-clapton-blue"></i>
+                        </div>
+                        <h3 class="text-3xl md:text-4xl font-black text-white leading-tight">${module.question}</h3>
+                    </div>
+                    
+                    <div class="space-y-4 w-full" id="quiz-options-container">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectQuizOption(index) {
+            const module = modules[currentModuleIndex];
+            const option = module.options[index];
+            const container = document.getElementById('quiz-options-container');
+            
+            container.style.pointerEvents = 'none';
+            
+            const selectedEl = document.getElementById(`quiz-opt-${index}`);
+            const dot = document.getElementById(`quiz-dot-${index}`);
+            
+            dot.style.opacity = '1';
+
+            if (option.correct) {
+                selectedEl.classList.add('bg-success-glow'); 
+                showFeedback("success", "Excellent! That is exactly right.", "finishModule()");
+            } else {
+                selectedEl.classList.add('bg-error-glow');
+                dot.classList.replace('bg-clapton-blue', 'bg-white');
+                selectedEl.querySelector('.border-2').classList.replace('group-hover:border-clapton-blue', 'border-white');
+                
+                showFeedback("error", "Not quite. Think about the rule and try again.");
+                
+                setTimeout(() => {
+                    hideFeedback();
+                    container.style.pointerEvents = 'auto';
+                    selectedEl.classList.remove('bg-error-glow');
+                    dot.classList.replace('bg-white', 'bg-clapton-blue');
+                    dot.style.opacity = '0';
+                    selectedEl.querySelector('.border-2').classList.replace('border-white', 'group-hover:border-clapton-blue');
+                }, 3000);
+            }
+        }
+
+        // --- TIPO DE CÁPSULA: ARENA DE FALA ---
+        function renderArena(module) {
+            let startersHtml = module.starters.map(s => `
+                <div class="bg-black/60 border-l-4 border-clapton-blue p-4 rounded-r-lg shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:bg-black/80 transition-colors">
+                    <p class="text-white font-bold italic text-lg">"${s}"</p>
+                </div>
+            `).join('');
+
+            document.getElementById('exercise-content').innerHTML = `
+                <div class="w-full max-w-6xl mx-auto mt-4 animate-fade-in flex flex-col h-full">
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 flex-grow">
+                        <!-- Lado do Desafio de Fala -->
+                        <div class="bg-slate-900/80 p-8 md:p-10 rounded-2xl border border-sky-500/20 relative flex flex-col justify-center shadow-xl backdrop-blur-md">
+                            <div class="absolute -top-4 left-8 bg-slate-800 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg border border-slate-600">A1 Speaking Prompt</div>
+                            
+                            <div class="w-20 h-20 bg-black/80 rounded-full flex items-center justify-center mb-8 mx-auto relative border border-sky-500/30 shadow-inner">
+                                <i class="fa-solid fa-microphone-lines text-3xl text-clapton-blue animate-pulse"></i>
+                            </div>
+
+                            <p class="text-white text-3xl md:text-4xl font-black italic leading-tight text-center mb-8 tracking-tighter drop-shadow-lg">"${module.prompt}"</p>
+                            
+                            <div class="mt-auto p-5 bg-black/60 border border-slate-700 rounded-xl">
+                                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2"><i class="fa-solid fa-crosshairs text-clapton-blue mr-2"></i> Goal</p>
+                                <p class="text-sm text-slate-300 font-medium leading-relaxed">${module.director}</p>
+                            </div>
+                        </div>
+
+                        <!-- Lado de Gravação do Aluno -->
+                        <div class="flex flex-col justify-center gap-6 transition-all duration-500 bg-black/40 p-8 md:p-10 rounded-2xl border border-slate-800 backdrop-blur-sm" id="podcast-student-side">
+                            <div class="flex items-center gap-3 mb-2 bg-slate-900 w-max px-4 py-2 rounded-full border border-slate-700">
+                                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+                                <p class="text-xs text-slate-300 font-bold uppercase tracking-widest">Speak Out Loud</p>
+                            </div>
+                            
+                            <p class="text-slate-400 text-sm mb-2 leading-relaxed">Use one of these <span class="text-white font-bold border-b border-clapton-blue pb-0.5">Speaking Starters</span> to structure your response.</p>
+                            
+                            <div class="space-y-3 mb-6 flex-grow flex flex-col justify-center">
+                                ${startersHtml}
+                            </div>
+
+                            <button onclick="finishPodcastSpeaking()" class="btn-confirm-glow animate-pulse-sky-glow w-full justify-center py-5 text-lg shadow-xl mt-auto">
+                                <i class="fa-solid fa-microphone text-xl"></i> I'm Done Speaking
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function finishPodcastSpeaking() {
+            const studentSide = document.getElementById('podcast-student-side');
+            studentSide.classList.add('bg-success-glow');
+            studentSide.classList.remove('bg-black/40', 'border-slate-800');
+            
+            const btn = studentSide.querySelector('button');
+            btn.innerHTML = `<i class="fa-solid fa-check text-2xl"></i> Recorded!`;
+            btn.classList.remove('bg-clapton-blue', 'animate-pulse-sky-glow');
+            btn.classList.add('bg-black', 'text-white');
+            
+            showFeedback("success", "Great speaking practice! Your idea is beautiful.", "finishModule()");
+        }
+
+        // --- CONCLUSÃO DA CÁPSULA (100% AVANÇO MANUAL COM SINCRONIZAÇÃO DE ABAS) ---
+        function finishModule() {
+            hideFeedback();
+            const isLast = currentModuleIndex + 1 >= modules.length;
+            const btnText = isLast ? "Finish Masterclass" : "Next Capsule <i class='fa-solid fa-forward-step ml-2'></i>";
+            const btnAction = isLast ? "closeExercise()" : "nextModule()";
+
+            document.getElementById('exercise-content').innerHTML = `
+                <div class="text-center animate-fade-in flex flex-col items-center justify-center h-full">
+                    <div class="w-28 h-28 bg-emerald-500 rounded-full flex items-center justify-center mb-8 shadow-[0_0_50px_rgba(16,185,129,0.5)]">
+                        <i class="fa-solid fa-check text-6xl text-black"></i>
+                    </div>
+                    <h2 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter">Capsule Complete</h2>
+                    <p class="text-lg text-slate-400 mb-12 max-w-md mx-auto">You've successfully mastered this Eric Clapton (A1) module.</p>
+                    <button onclick="${btnAction}" class="btn-confirm-glow shadow-xl px-12 py-5 hover:scale-105 transition-transform" style="background-color: #10b981; color: black;">
+                        ${btnText}
+                    </button>
+                </div>
+            `;
+            
+            modules[currentModuleIndex].completed = true;
+            renderCapsules(); // Atualiza a grade de fundo com um "Visto"
+        }
+
+        // --- SISTEMA DE FEEDBACK FLUTUANTE ---
+        function showFeedback(type, message, okAction = null) {
+            const bar = document.getElementById('feedback-bar');
+            
+            let bgClass = "bg-emerald-500 text-black border-emerald-500";
+            let icon = "fa-circle-check";
+            let actionBtn = "";
+            
+            if (type === "error") { 
+                bgClass = "bg-red-600 text-white border-red-500"; 
+                icon = "fa-triangle-exclamation"; 
+            }
+            if (type === "warning") { 
+                bgClass = "bg-yellow-500 text-black border-yellow-400"; 
+                icon = "fa-circle-info"; 
+            }
+
+            if (okAction) {
+                actionBtn = `<button onclick="${okAction}" class="ml-auto bg-black text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform uppercase tracking-widest text-sm shadow-xl border border-white/20">OK <i class="fa-solid fa-arrow-right ml-2"></i></button>`;
+            }
+            
+            bar.className = `absolute bottom-8 left-1/2 transform -translate-x-1/2 w-[90%] max-w-3xl py-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 flex items-center justify-between px-8 transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) border-2 opacity-100 translate-y-0 ${bgClass}`;
+            
+            bar.innerHTML = `
+                <div class="flex items-center justify-start gap-5">
+                    <i class="fa-solid ${icon} text-3xl drop-shadow-md"></i>
+                    <h4 class="text-lg font-bold tracking-wide">${message}</h4>
+                </div>
+                ${actionBtn}
+            `;
+        }
+
+        function hideFeedback() {
+            const bar = document.getElementById('feedback-bar');
+            bar.classList.remove('opacity-100', 'translate-y-0');
+            bar.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+        }
+
+        window.onload = () => { 
+            renderTabs();
+            renderCapsules(); 
+        };
+    </script>
+</body>
+</html>
